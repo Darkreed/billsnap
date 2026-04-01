@@ -5,8 +5,7 @@ import pytesseract
 
 
 class OCRExtractor(ABC):
-    """Abstract base class for OCR backends. Code to this, not to TesseractExtractor."""
-
+    
     @abstractmethod
     def extract_text(self, image: Image.Image) -> str:
         ...

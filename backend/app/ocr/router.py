@@ -11,13 +11,6 @@ extractor = TesseractExtractor()
 
 @router.post("/extract")
 async def extract_text(file: UploadFile):
-    # TODO: read the uploaded file, run OCR, return the extracted text.
-    # Steps:
-    # 1. Read the raw bytes from the file: await file.read()
-    # 2. Open it as a PIL Image: Image.open(io.BytesIO(contents))
-    # 3. Call extractor.extract_text(image)
-    # 4. Return {"text": <result>}
-    # If Image.open raises an Exception, raise HTTPException(status_code=400, detail="Invalid image")
     try:
         file_contents = await file.read()
         image = Image.open(io.BytesIO(file_contents))
