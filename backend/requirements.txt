@@ -3,3 +3,6 @@ uvicorn[standard]
 pydantic
 pytest
 httpx
+pillow
+pytesseract
+python-multipart
