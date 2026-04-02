@@ -1,16 +1,16 @@
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, UploadFile, Depends
 from PIL import Image
 import io
 
-from app.ocr.extractor import TesseractExtractor, PaddleOCRExtractor
+from app.ocr.extractor import OCRExtractor, TesseractExtractor, PaddleOCRExtractor
 
 router = APIRouter(prefix="/api/v1/ocr", tags=["ocr"])
 
-extractor = PaddleOCRExtractor()
-
+def get_extractor() -> OCRExtractor:
+    return PaddleOCRExtractor()
 
 @router.post("/extract")
-async def extract_text(file: UploadFile):
+async def extract_text(file: UploadFile, extractor: OCRExtractor = Depends(get_extractor)):
     try:
         file_contents = await file.read()
         image = Image.open(io.BytesIO(file_contents))
