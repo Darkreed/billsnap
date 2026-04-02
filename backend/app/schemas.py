@@ -2,7 +2,7 @@ from datetime import date, datetime
 from enum import Enum
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class BillStatus(str, Enum):
@@ -33,3 +33,5 @@ class BillResponse(BaseModel):
     recipient: str | None = None
     currency: str | None = None
     language: str | None = None
+
+    model_config = {"from_attributes": True}
