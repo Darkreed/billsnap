@@ -6,3 +6,6 @@ httpx
 pillow
 pytesseract
 python-multipart
+anthropic
+paddlepaddle
+paddleocr
