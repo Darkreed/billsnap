@@ -13,3 +13,5 @@ ollama
 sqlalchemy[asyncio]
 asyncpg
 alembic
+google-auth-oauthlib
+google-api-python-client

@@ -8,20 +8,30 @@ from app.database import get_db
 from app.models import Bill
 from app.schemas import BillCreate, BillResponse
 from app.ocr.extractor import OCRExtractor
+from app.calendar.client import CalendarClient
+
 from app.ocr.router import get_extractor
 from app.parser.parser import BillParser
 from app.parser.router import get_parser
-
+from app.calendar.router import get_calendar_client
 
 router = APIRouter(prefix="/api/v1/bills", tags=["bills"])
 
 
 @router.post("/", response_model=BillResponse, status_code=201)
-async def create_bill(req: BillCreate, db: AsyncSession = Depends(get_db)):
+async def create_bill(
+    req: BillCreate,
+    db: AsyncSession = Depends(get_db),
+    calendar: CalendarClient = Depends(get_calendar_client),
+):
     bill = Bill(**req.model_dump())
     db.add(bill)
     await db.commit()
     await db.refresh(bill)
+    if bill.due_date is not None:
+        event_title = f"Pay {bill.biller}"
+        event_desc = f"{bill.amount} {bill.currency}"
+        calendar.create_event(title=event_title, due_date=bill.due_date, description=event_desc)
     return bill
 
 
@@ -57,6 +67,7 @@ async def upload_bill(
     db: AsyncSession = Depends(get_db),
     extractor: OCRExtractor = Depends(get_extractor),
     parser: BillParser = Depends(get_parser),
+    calendar: CalendarClient = Depends(get_calendar_client),
 ):
     try:
         file_contents = await file.read()
@@ -70,6 +81,10 @@ async def upload_bill(
         db.add(bill)
         await db.commit()
         await db.refresh(bill)
+        if bill.due_date is not None:
+            event_title = f"Pay {bill.biller}"
+            event_desc = f"{bill.amount} {bill.currency}"
+            calendar.create_event(title=event_title, due_date=bill.due_date, description=event_desc)
         return bill
     except Exception:
         raise HTTPException(422)
