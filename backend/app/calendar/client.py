@@ -35,19 +35,19 @@ class GoogleCalendarClient(CalendarClient):
         self._service = self._build_service()
 
     def _build_service(self):
-        if os.path.exists(TOKEN_FILE):
-            creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
-        else:
-            creds = None
-        if not creds or creds.token_state != TokenState.FRESH:
-            if creds and creds.token_state == TokenState.STALE and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                creds = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE,SCOPES).run_local_server(port=0)
-            with open(TOKEN_FILE,'w') as tok:
-                tok.write(creds.to_json())
+        if not os.path.exists(TOKEN_FILE):
+            raise RuntimeError("No token.json found. Run auth_google.py first.")
         
-        return build("calendar","v3",credentials=creds)
+        creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+        
+        if creds.token_state == TokenState.STALE and creds.refresh_token:
+            creds.refresh(Request())
+            with open(TOKEN_FILE, 'w') as tok:
+                tok.write(creds.to_json())
+        elif creds.token_state != TokenState.FRESH:
+            raise RuntimeError("Invalid token. Re-run auth_google.py.")
+        
+        return build("calendar", "v3", credentials=creds)
 
 
     def create_event(self, title: str, due_date: date, description: str = "") -> str:
