@@ -16,6 +16,7 @@ class TesseractExtractor(OCRExtractor):
 
     def extract_text(self, image: Image.Image) -> str:
         extracted_text = pytesseract.image_to_string(image, lang="eng+jpn")
+        print(extracted_text)
         return extracted_text
 
 

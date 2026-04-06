@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import date
+from datetime import datetime, date
 
 from app.schemas import BillCreate
 import json
@@ -36,6 +36,7 @@ class ClaudeParser(BillParser):
                 "Extract the following fields from this bill text and return ONLY valid JSON, "
                 "no explanation, no markdown:\n"
                 "Fields: biller, amount, currency, language, due_date (YYYY-MM-DD format)\n\n"
+                "currency: string — infer from context if not explicit (airtel.in/Indian biller → 'INR', Japanese biller → 'JPY', etc.) or null if truly unknown\n"
                 f"{text}"
             )
             
@@ -55,7 +56,7 @@ class ClaudeParser(BillParser):
 
 class OllamaParser(BillParser):
     
-    def __init__(self, model: str = "qwen2.5"):
+    def __init__(self, model: str = "gemma4"):
         import ollama
         self._client = ollama.Client()
         self._model = model
@@ -63,19 +64,33 @@ class OllamaParser(BillParser):
     def parse(self, text: str) -> BillCreate:
         try:
             prompt = (
-                "Extract the following fields from this bill text:\n"
-                "no explanation, no markdown:\n"
-                "Fields: biller, amount, currency, language (language of the text), due_date (YYYY-MM-DD format)\n\n"
-                f"{text}"
+                "You are a bill data extractor. Extract structured data from the bill text below.\n"
+                "Return ONLY a JSON object with exactly these fields:\n"
+                "  biller: string (company or person issuing the bill)\n"
+                "  amount: number (total amount due, no currency symbol)\n"
+                "  currency: string — infer from context if not explicit (airtel.in/Indian biller → 'INR', Japanese biller → 'JPY', etc.) or null if truly unknown\n"
+                "  language: 'ja', 'en', or 'mixed'\n"
+                "  due_date: date string in YYYY-MM-DD format, or null if not found\n"
+                "If a field cannot be determined from the text, use null.\n"
+                "The bill may be in Japanese — extract data regardless of language.\n\n"
+                "  currency: infer from context if not explicit (e.g. Indian companies → 'INR', Japanese → 'JPY')\n"
+                f"Bill text:\n{text}"
             )
+
             llm_response = self._client.chat(
                 model=self._model,
                 messages=[{"role": "user", "content": prompt}],
                 format="json"
             )
-            
+            print("LLM Response:"+llm_response.message.content)
             bill_data = json.loads(llm_response.message.content)
-
+            if bill_data.get("due_date"):
+                for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%m-%d-%Y", "%d/%m/%Y"):
+                    try:
+                        bill_data["due_date"] = datetime.strptime(bill_data["due_date"], fmt).strftime("%Y-%m-%d")
+                        break
+                    except ValueError:
+                        continue
             bill = BillCreate(**bill_data)
             return bill
         

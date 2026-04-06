@@ -73,6 +73,7 @@ async def upload_bill(
         file_contents = await file.read()
         img = Image.open(io.BytesIO(file_contents))
         extracted_text = extractor.extract_text(img)
+        print(f"OCR output: {extracted_text}")
     except Exception:
         raise HTTPException(400)
     try:
