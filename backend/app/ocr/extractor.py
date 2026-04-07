@@ -25,7 +25,7 @@ class PaddleOCRExtractor(OCRExtractor):
     def __init__(self):
         from paddleocr import PaddleOCR
         # lang="japan" enables Japanese + English recognition
-        self._ocr = PaddleOCR(use_doc_orientation_classify=False, use_angle_cls=False, lang="japan")
+        self._ocr = PaddleOCR(use_doc_orientation_classify=False, use_angle_cls=True, lang="japan")
 
     def extract_text(self, image: Image.Image) -> str:
         img_array = np.array(image)

@@ -36,6 +36,9 @@ class ClaudeParser(BillParser):
                 "Extract the following fields from this bill text and return ONLY valid JSON, "
                 "no explanation, no markdown:\n"
                 "Fields: biller, amount, currency, language, due_date (YYYY-MM-DD format)\n\n"
+                "Japanese era date conversion: 令和N年 = (2018+N), 平成N年 = (1988+N)\n"
+                "For amount: extract the final total due, not subtotals or line items."
+                "In Japanese bills, look for 合計 or 請求金額 as the total field.\n"
                 "currency: string — infer from context if not explicit (airtel.in/Indian biller → 'INR', Japanese biller → 'JPY', etc.) or null if truly unknown\n"
                 f"{text}"
             )
