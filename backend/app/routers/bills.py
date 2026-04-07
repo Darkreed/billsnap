@@ -87,5 +87,6 @@ async def upload_bill(
             event_desc = f"{bill.amount} {bill.currency}"
             calendar.create_event(title=event_title, due_date=bill.due_date, description=event_desc)
         return bill
-    except Exception:
-        raise HTTPException(422)
+    except Exception as e:
+        raise HTTPException(422, detail=str(e))
+

@@ -6,8 +6,10 @@ from app.ocr.extractor import OCRExtractor, TesseractExtractor, PaddleOCRExtract
 
 router = APIRouter(prefix="/api/v1/ocr", tags=["ocr"])
 
+_extractor = PaddleOCRExtractor()
+
 def get_extractor() -> OCRExtractor:
-    return PaddleOCRExtractor()
+    return _extractor
 
 @router.post("/extract")
 async def extract_text(file: UploadFile, extractor: OCRExtractor = Depends(get_extractor)):

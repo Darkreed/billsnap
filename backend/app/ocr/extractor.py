@@ -28,6 +28,8 @@ class PaddleOCRExtractor(OCRExtractor):
         self._ocr = PaddleOCR(use_doc_orientation_classify=False, use_angle_cls=True, lang="japan")
 
     def extract_text(self, image: Image.Image) -> str:
+        MAX_SIZE = (1024, 1024)
+        image.thumbnail(MAX_SIZE, Image.LANCZOS)
         img_array = np.array(image)
         result = self._ocr.predict(img_array)
         if not result:

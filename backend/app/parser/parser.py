@@ -70,13 +70,12 @@ class OllamaParser(BillParser):
                 "You are a bill data extractor. Extract structured data from the bill text below.\n"
                 "Return ONLY a JSON object with exactly these fields:\n"
                 "  biller: string (company or person issuing the bill)\n"
-                "  amount: number (total amount due, no currency symbol)\n"
+                "amount: number — the final total due. In Japanese bills look for '合計請求金額' or '合計'. Ignore subtotals like 水道 or 下水道 line items.\n"
                 "  currency: string — infer from context if not explicit (airtel.in/Indian biller → 'INR', Japanese biller → 'JPY', etc.) or null if truly unknown\n"
                 "  language: 'ja', 'en', or 'mixed'\n"
                 "  due_date: date string in YYYY-MM-DD format, or null if not found\n"
                 "If a field cannot be determined from the text, use null.\n"
                 "The bill may be in Japanese — extract data regardless of language.\n\n"
-                "  currency: infer from context if not explicit (e.g. Indian companies → 'INR', Japanese → 'JPY')\n"
                 f"Bill text:\n{text}"
             )
 
@@ -97,5 +96,5 @@ class OllamaParser(BillParser):
             bill = BillCreate(**bill_data)
             return bill
         
-        except Exception:
-            raise ValueError(f"Failed to parse bill")
+        except Exception as e:
+            raise ValueError(f"Failed to parse bill: {e}")
