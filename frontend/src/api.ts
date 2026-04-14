@@ -1,4 +1,6 @@
-const BASE_URL = "http://localhost:8000/api/v1"
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:8000/api/v1"
+  : "/api/api/v1"
 
 export interface Bill {
   id: string
