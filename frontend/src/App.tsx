@@ -17,11 +17,15 @@ function App() {
     setBills(prev => [bill, ...prev])
   }
 
+  function handlePaid(updated: Bill) {
+    setBills(prev => prev.map(b => b.id === updated.id ? updated : b))
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">BillSnap</h1>
       <UploadForm onUploaded={handleUploaded} />
-      <BillList bills={bills} loading={loading} />
+      <BillList bills={bills} loading={loading} onPaid={handlePaid} />
     </div>
   )
 }

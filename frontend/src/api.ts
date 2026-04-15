@@ -30,3 +30,8 @@ export async function uploadBill(file: File): Promise<Bill> {
   })
   return response.json()
 }
+
+export async function markAsPaid(id: string): Promise<Bill> {
+  const response = await fetch(`${BASE_URL}/bills/${id}`, { method: "PATCH" })
+  return response.json()
+}
