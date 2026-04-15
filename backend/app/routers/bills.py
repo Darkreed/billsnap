@@ -3,10 +3,11 @@ from PIL import Image
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import io
+from datetime import date
 
 from app.database import get_db
 from app.models import Bill
-from app.schemas import BillCreate, BillResponse
+from app.schemas import BillCreate, BillResponse, BillStatus
 from app.ocr.extractor import OCRExtractor
 from app.calendar.client import CalendarClient
 
@@ -28,10 +29,15 @@ async def create_bill(
     db.add(bill)
     await db.commit()
     await db.refresh(bill)
-    if bill.due_date is not None:
-        event_title = f"Pay {bill.biller}"
-        event_desc = f"{bill.amount} {bill.currency}"
-        calendar.create_event(title=event_title, due_date=bill.due_date, description=event_desc)
+    if bill.due_date is not None and bill.due_date >= date.today():
+        event_id = calendar.create_event(
+            title=f"Pay {bill.biller}",
+            due_date=bill.due_date,
+            description=f"{bill.amount} {bill.currency}"
+        )
+        bill.calendar_event_id = event_id
+        await db.commit()
+
     return bill
 
 
@@ -60,6 +66,17 @@ async def delete_bill(bill_id: str, db: AsyncSession = Depends(get_db)):
     await db.commit()
     return
 
+@router.patch("/{bill_id}", response_model=BillResponse)
+async def update_bill(bill_id: str, db: AsyncSession = Depends(get_db), calendar: CalendarClient = Depends(get_calendar_client)):
+    bill = await db.get(Bill, bill_id)
+    if bill is None:
+        raise HTTPException(404)
+    bill.status = BillStatus.paid
+    if bill.calendar_event_id:
+        calendar.delete_event(bill.calendar_event_id)
+    await db.commit()
+    await db.refresh(bill)
+    return bill
 
 @router.post("/upload", response_model=BillResponse)
 async def upload_bill(
@@ -82,10 +99,15 @@ async def upload_bill(
         db.add(bill)
         await db.commit()
         await db.refresh(bill)
-        if bill.due_date is not None:
-            event_title = f"Pay {bill.biller}"
-            event_desc = f"{bill.amount} {bill.currency}"
-            calendar.create_event(title=event_title, due_date=bill.due_date, description=event_desc)
+        if bill.due_date is not None and bill.due_date >= date.today():
+            event_id = calendar.create_event(
+                title=f"Pay {bill.biller}",
+                due_date=bill.due_date,
+                description=f"{bill.amount} {bill.currency}"
+            )
+            bill.calendar_event_id = event_id
+            await db.commit()
+
         return bill
     except Exception as e:
         raise HTTPException(422, detail=str(e))
