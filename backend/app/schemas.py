@@ -10,7 +10,6 @@ class BillStatus(str, Enum):
     paid = "paid"
     overdue = "overdue"
 
-
 class BillCreate(BaseModel):
     biller: str
     amount: float
@@ -19,8 +18,7 @@ class BillCreate(BaseModel):
     recipient: str | None = None
     currency: str | None = None
     language: str | None = None
-
-
+    calendar_event_id: str | None = None
 
 class BillResponse(BaseModel):
     id: UUID
@@ -33,5 +31,6 @@ class BillResponse(BaseModel):
     recipient: str | None = None
     currency: str | None = None
     language: str | None = None
+    calendar_event_id: str | None = None
 
     model_config = {"from_attributes": True}

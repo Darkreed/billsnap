@@ -40,6 +40,7 @@ class ClaudeParser(BillParser):
                 "For amount: extract the final total due, not subtotals or line items."
                 "In Japanese bills, look for 合計 or 請求金額 as the total field.\n"
                 "currency: string — infer from context if not explicit (airtel.in/Indian biller → 'INR', Japanese biller → 'JPY', etc.) or null if truly unknown\n"
+                "biller: translate to English if in another language (e.g. '東京都水道局' → 'Tokyo Metropolitan Waterworks')"
                 f"{text}"
             )
             
@@ -76,6 +77,7 @@ class OllamaParser(BillParser):
                 "  due_date: date string in YYYY-MM-DD format, or null if not found\n"
                 "If a field cannot be determined from the text, use null.\n"
                 "The bill may be in Japanese — extract data regardless of language.\n\n"
+                "biller: translate to English if in another language (e.g. '東京都水道局' → 'Tokyo Metropolitan Waterworks')"
                 f"Bill text:\n{text}"
             )
 

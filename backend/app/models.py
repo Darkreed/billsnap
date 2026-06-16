@@ -21,5 +21,6 @@ class Bill(Base):
     currency: Mapped[str | None] = mapped_column(String, nullable=True)
     language: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    calendar_event_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # TODO: add image_path: Mapped[str | None] for when we store uploaded images

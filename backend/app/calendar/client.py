@@ -16,14 +16,20 @@ TOKEN_FILE = os.getenv("GOOGLE_TOKEN_FILE", "token.json")
 class CalendarClient(ABC):
     @abstractmethod
     def create_event(self, title: str, due_date: date, description: str = "") -> str:
-        """Create a calendar event. Returns the event URL."""
+        """Create a calendar event. Returns the event ID."""
+
+    @abstractmethod
+    def delete_event(self, event_id: str) -> None:
         ...
 
 
 class MockCalendarClient(CalendarClient):
     def create_event(self, title: str, due_date: date, description: str = "") -> str:
         print(f"[MockCalendar] Would create event: {title} on {due_date}")
-        return "https://mock-calendar-event"
+        return "event-id-xxx"
+    
+    def delete_event(self, event_id: str) -> None:
+        print(f"[MockCalendar] Would delete event: {event_id}")
 
 
 class GoogleCalendarClient(CalendarClient):
@@ -64,4 +70,7 @@ class GoogleCalendarClient(CalendarClient):
         }
         
         response = self._service.events().insert(calendarId="primary", body=event_det).execute()
-        return response.get("htmlLink", "")
+        return response.get("id", "")
+
+    def delete_event(self, event_id: str) -> None:
+        self._service.events().delete(calendarId="primary", eventId=event_id).execute()
